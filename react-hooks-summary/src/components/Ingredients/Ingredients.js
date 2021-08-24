@@ -21,7 +21,15 @@ const ingredientReducer = (currentIngredients, action) => {
 
 const Ingredients = () => {
   const [userIngredients, dispatch] = useReducer(ingredientReducer, []);
-  const { isLoading, error, data, sendRequest, reqExtra, reqId } = useHttp();
+  const {
+    isLoading,
+    error,
+    data,
+    sendRequest,
+    reqExtra,
+    reqId,
+    clear,
+  } = useHttp();
 
   // useEffect will run on the first render and then anytime anything in the dependencies array changes
 
@@ -71,8 +79,6 @@ const Ingredients = () => {
     [sendRequest]
   );
 
-  const clearError = () => {};
-
   const ingredientList = useMemo(() => {
     return (
       <IngredientList
@@ -84,7 +90,7 @@ const Ingredients = () => {
 
   return (
     <div className="App">
-      {error && <ErrorModal onClose={clearError}>{error}</ErrorModal>}
+      {error && <ErrorModal onClose={clear}>{error}</ErrorModal>}
 
       <IngredientForm
         onAddIngredient={addIngredientHandler}
