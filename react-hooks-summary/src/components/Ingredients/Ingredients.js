@@ -1,4 +1,4 @@
-import React, { useCallback, useReducer, useState } from "react";
+import React, { useCallback, useReducer } from "react";
 
 import IngredientForm from "./IngredientForm";
 import IngredientList from "./IngredientList";
@@ -18,11 +18,30 @@ const ingredientReducer = (currentIngredients, action) => {
   }
 };
 
+const httpReducer = (curHttpState, action) => {
+  switch (action.type) {
+    case "SEND":
+      return { loading: true, error: null };
+    case "RESPONSE":
+      return { ...curHttpState, loading: false };
+    case "ERROR":
+      return { loading: false, error: action.errorMessage };
+    case "CLEAR":
+      return { ...curHttpState, error: null };
+    default:
+      throw new Error("Should not be reached!");
+  }
+};
+
 const Ingredients = () => {
   const [userIngredients, dispatch] = useReducer(ingredientReducer, []);
-  const [isLoading, setIsLoading] = useState(false);
+  const [httpState, dispatchHttp] = useReducer(httpReducer, {
+    loading: false,
+    error: null,
+  });
+  // const [isLoading, setIsLoading] = useState(false);
   // const [userIngredients, setUserIngredients] = useState([]);
-  const [error, setError] = useState();
+  // const [error, setError] = useState();
 
   // useEffect will run on the first render and then anytime anything in the dependencies array changes
 
@@ -37,7 +56,8 @@ const Ingredients = () => {
   // useCallback will cache the function on rerender
 
   const addIngredientHandler = (ingredient) => {
-    setIsLoading(true);
+    // setIsLoading(true);
+    dispatchHttp({ type: "SEND" });
     fetch(
       "https://react-course-recap-default-rtdb.firebaseio.com/ingredients.json",
       {
@@ -47,7 +67,8 @@ const Ingredients = () => {
       }
     )
       .then((response) => {
-        setIsLoading(false);
+        // setIsLoading(false);
+        dispatchHttp({ type: "RESPONSE" });
         return response.json();
       })
       .then((responseData) => {
@@ -63,13 +84,15 @@ const Ingredients = () => {
   };
 
   const removeIngredientHandler = (ingredientId) => {
-    setIsLoading(true);
+    // setIsLoading(true);
+    dispatchHttp({ type: "SEND" });
     fetch(
       `https://react-course-recap-default-rtdb.firebaseio.com/ingredients/${ingredientId}.json`,
       { method: "DELETE" }
     )
       .then((response) => {
-        setIsLoading(false);
+        // setIsLoading(false);
+        dispatchHttp({ type: "RESPONSE" });
         // setUserIngredients((prevIngredients) =>
         //   prevIngredients.filter((ingredient) => ingredient.id !== ingredientId)
         dispatch({
@@ -78,23 +101,27 @@ const Ingredients = () => {
         });
       })
       .catch((error) => {
-        setError("Something went wrong!");
-        setIsLoading(false);
+        // setError("Something went wrong!");
+        // setIsLoading(false);
+        dispatchHttp({ type: "ERROR", errorMessage: "Something went wrong!" });
       });
   };
 
   const clearError = () => {
-    setError(null);
-    setIsLoading(false);
+    // setError(null);
+    // setIsLoading(false);
+    dispatchHttp({ type: "CLEAR" });
   };
 
   return (
     <div className="App">
-      {error && <ErrorModal onClose={clearError}>{error}</ErrorModal>}
+      {httpState.error && (
+        <ErrorModal onClose={clearError}>{httpState.error}</ErrorModal>
+      )}
 
       <IngredientForm
         onAddIngredient={addIngredientHandler}
-        loading={isLoading}
+        loading={httpState.loading}
       />
 
       <section>
