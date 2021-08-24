@@ -7,10 +7,12 @@ const IngredientForm = React.memo((props) => {
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   // returns an array that always has two elements, the second element is a function you can call to update the first element
+  // hooks have to be used in the root function, couldn't use it within the submit handler for example
+  // hooks should not be used in conditional statements
 
   const submitHandler = (event) => {
     event.preventDefault();
-    // ...
+    props.onAddIngredient({ title: title, amount: amount });
   };
 
   return (
